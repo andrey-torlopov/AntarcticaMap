@@ -1,74 +1,6 @@
-import SwiftUI
+import UIKit
 
-public struct AntarcticaTiledMapContentView: View {
-    @State private var controller: TiledMapViewController
-    private let logger: TiledMapLogger
-
-    public init(params: EarthDataMapRequest, imageSize: CGSize = CGSize(width: 8192, height: 8192), logger: TiledMapLogger = NoOpLogger()) {
-        self.logger = logger
-        _controller = State(initialValue: TiledMapViewController(params: params, imageSize: imageSize, logger: logger))
-    }
-
-    public var body: some View {
-        ZStack(alignment: .bottom) {
-            TiledMapViewWrapper(controller: controller)
-                .ignoresSafeArea()
-            controls
-                .padding()
-        }
-    }
-
-    private var controls: some View {
-        VStack {
-            HStack {
-                Button(action: controller.zoomOut) {
-                    Image(systemName: "minus")
-                }
-                .buttonStyle(MapControlButtonStyle())
-
-                Button(action: controller.zoomIn) {
-                    Image(systemName: "plus")
-                }
-                .buttonStyle(MapControlButtonStyle())
-            }
-            .padding(.bottom, 8)
-
-            HStack {
-                Button(action: controller.moveUp) {
-                    Image(systemName: "arrow.up")
-                }
-                .buttonStyle(MapControlButtonStyle())
-
-                Button(action: controller.moveDown) {
-                    Image(systemName: "arrow.down")
-                }
-                .buttonStyle(MapControlButtonStyle())
-
-                Button(action: controller.moveLeft) {
-                    Image(systemName: "arrow.left")
-                }
-                .buttonStyle(MapControlButtonStyle())
-
-                Button(action: controller.moveRight) {
-                    Image(systemName: "arrow.right")
-                }
-                .buttonStyle(MapControlButtonStyle())
-            }
-        }
-    }
-}
-
-private struct TiledMapViewWrapper: UIViewControllerRepresentable {
-    let controller: TiledMapViewController
-
-    func makeUIViewController(context: Context) -> TiledMapViewController {
-        controller
-    }
-
-    func updateUIViewController(_ uiViewController: TiledMapViewController, context: Context) {}
-}
-
-private final class TiledMapViewController: UIViewController {
+public final class TiledMapViewController: UIViewController {
     private var didSetupZoom = false
     private let logger: TiledMapLogger
 
@@ -79,14 +11,13 @@ private final class TiledMapViewController: UIViewController {
 
     var tilesSource: EarthDataTilesSource
 
-    let scrollView: UIScrollView = {
+    public let scrollView: UIScrollView = {
         let view = UIScrollView()
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
 
-
-    init(params: EarthDataMapRequest, imageSize: CGSize, logger: TiledMapLogger) {
+    public init(params: EarthDataMapRequest, imageSize: CGSize, logger: TiledMapLogger) {
         self.logger = logger
         self.tilesSource = EarthDataTilesSource(
             params: params,
@@ -101,7 +32,7 @@ private final class TiledMapViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    override func viewDidLoad() {
+    public override func viewDidLoad() {
         super.viewDidLoad()
         logger.info("TiledMapViewController viewDidLoad", metadata: nil)
 
@@ -120,7 +51,6 @@ private final class TiledMapViewController: UIViewController {
         scrollView.addSubview(tiledView)
         scrollView.delegate = self
 
-        // Настройка в том же стиле что и ContentView5
         let size = tilesSource.imageSize
         let tileSize = tilesSource.tileSize
 
@@ -139,7 +69,7 @@ private final class TiledMapViewController: UIViewController {
         logger.debug("Load map init", metadata: ["size": "\(size)", "tileSize": "\(tileSize)", "levels": "\(levels)"])
     }
 
-    override func viewDidLayoutSubviews() {
+    public override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 
         if !didSetupZoom {
@@ -148,7 +78,7 @@ private final class TiledMapViewController: UIViewController {
         }
     }
 
-    func scaleToFit() {
+    public func scaleToFit() {
         let scrollViewSize = scrollView.bounds.size
         let contentSize = tiledView.bounds.size
 
@@ -167,13 +97,13 @@ private final class TiledMapViewController: UIViewController {
         logger.debug("Scale to fit", metadata: ["minZoomScale": "\(minZoomScale)"])
     }
 
-    func zoomIn() {
+    public func zoomIn() {
         let newScale = min(scrollView.zoomScale * 2, scrollView.maximumZoomScale)
         logger.debug("Zoom in", metadata: ["currentScale": "\(scrollView.zoomScale)", "newScale": "\(newScale)"])
         scrollView.setZoomScale(newScale, animated: true)
     }
 
-    func zoomOut() {
+    public func zoomOut() {
         let newScale = max(scrollView.zoomScale / 2, scrollView.minimumZoomScale)
         logger.debug("Zoom out", metadata: ["currentScale": "\(scrollView.zoomScale)", "newScale": "\(newScale)"])
         scrollView.setZoomScale(newScale, animated: true)
@@ -187,12 +117,12 @@ private final class TiledMapViewController: UIViewController {
         scrollView.setContentOffset(offset, animated: true)
     }
 
-    func moveUp() { move(dx: 0, dy: -20) }
-    func moveDown() { move(dx: 0, dy: 20) }
-    func moveLeft() { move(dx: -20, dy: 0) }
-    func moveRight() { move(dx: 20, dy: 0) }
+    public func moveUp() { move(dx: 0, dy: -20) }
+    public func moveDown() { move(dx: 0, dy: 20) }
+    public func moveLeft() { move(dx: -20, dy: 0) }
+    public func moveRight() { move(dx: 20, dy: 0) }
 }
 
 extension TiledMapViewController: UIScrollViewDelegate {
-    func viewForZooming(in scrollView: UIScrollView) -> UIView? { tiledView }
+    public func viewForZooming(in scrollView: UIScrollView) -> UIView? { tiledView }
 }
