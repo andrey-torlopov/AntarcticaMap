@@ -1,11 +1,7 @@
 import UIKit
-import Models
-import Services
-import Nevod
-import Core
-import Letopis
+import Foundation
 
-class EarthDataTilesSource: NSObject, TilesSource {
+public class EarthDataTilesSource: NSObject, TilesSource {
     struct Request: TileRequest {
         let column: Int
         let row: Int
@@ -19,25 +15,13 @@ class EarthDataTilesSource: NSObject, TilesSource {
     let imageSize: CGSize
     private let maxLevelIndex: Int
     private let params: EarthDataMapRequest
-    private let logger: Letopis
+    private let logger: TiledMapLogger
 
-    // Пустой поток для совместимости с AsyncStream API
-    let updates: AsyncStream<Void>
-
-    init(
-        params: EarthDataMapRequest = EarthDataMapRequest(
-            minX: -4_000_000,
-            minY: -4_000_000,
-            maxX: 4_000_000,
-            maxY: 4_000_000,
-            width: 512,
-            height: 512,
-            time: "2022-11-11",
-            layers: "MODIS_Terra_CorrectedReflectance_TrueColor"
-        ),
+    public init(
+        params: EarthDataMapRequest,
         imageSize: CGSize = CGSize(width: 512, height: 512),
         tileSize: CGSize = CGSize(width: 512, height: 512),
-        logger: Letopis
+        logger: TiledMapLogger = NoOpLogger()
     ) {
         self.params = params
         self.imageSize = imageSize
@@ -46,9 +30,6 @@ class EarthDataTilesSource: NSObject, TilesSource {
         self.maxLevelIndex = max(0, computedLevels - 1)
         self.logger = logger
 
-        // Пустой поток, так как у нас синхронная загрузка
-        self.updates = AsyncStream<Void> { _ in }
-
         super.init()
     }
 
@@ -56,11 +37,7 @@ class EarthDataTilesSource: NSObject, TilesSource {
         let fallbackRequest = Request(column: 0, row: 0, level: 0)
 
         guard scale.isFinite, scale > 0 else {
-            logger
-                .event(DevelopmentEventType.debug)
-                .source()
-                .warning("Received invalid scale: \(Double(scale)). Returning fallback tile request.")
-
+            logger.warning("Received invalid scale: \(Double(scale)). Returning fallback tile request.", metadata: nil)
             return fallbackRequest
         }
 
@@ -74,19 +51,13 @@ class EarthDataTilesSource: NSObject, TilesSource {
 
         let rawColumnPosition = Double(origin.x / tileSize.width * normalizedScale)
         guard rawColumnPosition.isFinite else {
-            logger
-                .event(DevelopmentEventType.debug)
-                .source()
-                .warning("Column calculation produced non-finite value for origin.x: \(Double(origin.x)). Returning fallback tile request.")
+            logger.warning("Column calculation produced non-finite value for origin.x: \(Double(origin.x)). Returning fallback tile request.", metadata: nil)
             return fallbackRequest
         }
 
         let rawRowPosition = Double(origin.y / tileSize.height * normalizedScale)
         guard rawRowPosition.isFinite else {
-            logger
-                .event(DevelopmentEventType.debug)
-                .source()
-                .warning("Row calculation produced non-finite value for origin.y: \(Double(origin.y)). Returning fallback tile request.")
+            logger.warning("Row calculation produced non-finite value for origin.y: \(Double(origin.y)). Returning fallback tile request.", metadata: nil)
             return fallbackRequest
         }
 
@@ -118,6 +89,7 @@ class EarthDataTilesSource: NSObject, TilesSource {
         let width = Int(tileSize.width)
         let height = Int(tileSize.height)
 
+        let dateString = DateFormatHelper.formatDateForEarthData(params.date)
         let urlString = "https://gibs.earthdata.nasa.gov/wms/epsg3031/best/wms.cgi?" +
             "version=1.3.0&service=WMS&request=GetMap" +
             "&format=image/png" +
@@ -126,15 +98,10 @@ class EarthDataTilesSource: NSObject, TilesSource {
             "&CRS=EPSG:3031" +
             "&HEIGHT=\(height)" +
             "&WIDTH=\(width)" +
-            "&TIME=\(params.time)" +
-            "&layers=\(params.layers)"
+            "&TIME=\(dateString)" +
+            "&layers=\(params.layers.rawValue)"
 
-        logger
-            .event(DevelopmentEventType.debug)
-            .action(DevelopmentAction.dump)
-            .source()
-            .payload(["url": urlString, "requestDescription": request.description])
-            .debug("Requesting tile")
+        logger.debug("Requesting tile", metadata: ["url": urlString, "requestDescription": request.description])
 
         guard let imageURL = URL(string: urlString) else {
             return nil

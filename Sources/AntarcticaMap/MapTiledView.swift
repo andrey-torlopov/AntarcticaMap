@@ -1,6 +1,6 @@
 import UIKit
 
-final class MapTiledView: UIView {
+public final class MapTiledView: UIView {
     var tilesSource: TilesSource?
 
     var size: CGSize {

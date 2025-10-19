@@ -1,15 +1,27 @@
 import UIKit
+import Foundation
 
-protocol TileRequest: CustomStringConvertible { }
+// MARK: - Date Formatting Helper
+public struct DateFormatHelper {
+    public static func formatDateForEarthData(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        return formatter.string(from: date)
+    }
+}
 
-protocol TilesSource {
+public protocol TileRequest: CustomStringConvertible { }
+
+public protocol TilesSource {
     var tileSize: CGSize { get }
     var imageSize: CGSize { get }
     func request(for origin: CGPoint, scale: CGFloat) -> TileRequest
     func tile(by request: TileRequest) -> UIImage?
 }
 
-func levelByZoomScale(
+public func levelByZoomScale(
     _ zoomScale: CGFloat,
     fullSize: CGSize,
     firstLevelSize: CGSize = CGSize(width: 1, height: 1)
@@ -17,11 +29,11 @@ func levelByZoomScale(
     log2(zoomScale * fullSize.width / firstLevelSize.width) + 1
 }
 
-func maxLevel(_ fullSize: CGSize, firstLevelSize: CGSize = CGSize(width: 1, height: 1)) -> CGFloat {
+public func maxLevel(_ fullSize: CGSize, firstLevelSize: CGSize = CGSize(width: 1, height: 1)) -> CGFloat {
     levelByZoomScale(1.0, fullSize: fullSize, firstLevelSize: firstLevelSize)
 }
 
-func zoomScaleByLevel(_ level: Int) -> CGFloat {
+public func zoomScaleByLevel(_ level: Int) -> CGFloat {
     pow(2, -CGFloat(level))
 }
 

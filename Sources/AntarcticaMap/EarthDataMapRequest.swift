@@ -1,5 +1,9 @@
 import Foundation
 
+public enum EarthDataLayer: String, Codable, Equatable, Sendable {
+    case modisTerraCorrectedReflectance = "MODIS_Terra_CorrectedReflectance_TrueColor"
+}
+
 public struct EarthDataMapRequest: Codable, Equatable, Sendable {
     public let minX: Int
     public let minY: Int
@@ -7,8 +11,8 @@ public struct EarthDataMapRequest: Codable, Equatable, Sendable {
     public let maxY: Int
     public let width: Int
     public let height: Int
-    public let time: String
-    public let layers: String
+    public let date: Date
+    public let layers: EarthDataLayer
     public let format: String
     public let crs: String
 
@@ -19,8 +23,8 @@ public struct EarthDataMapRequest: Codable, Equatable, Sendable {
         maxY: Int,
         width: Int,
         height: Int,
-        time: String,
-        layers: String,
+        date: Date,
+        layers: EarthDataLayer,
         format: String = "image/png",
         crs: String = "EPSG:3031"
     ) {
@@ -30,7 +34,7 @@ public struct EarthDataMapRequest: Codable, Equatable, Sendable {
         self.maxY = maxY
         self.width = width
         self.height = height
-        self.time = time
+        self.date = date
         self.layers = layers
         self.format = format
         self.crs = crs
@@ -39,21 +43,28 @@ public struct EarthDataMapRequest: Codable, Equatable, Sendable {
     public var bbox: String {
         "\(minX),\(minY),\(maxX),\(maxY)"
     }
+
+    public var cacheKey: String {
+        let dateString = DateFormatHelper.formatDateForEarthData(date)
+        return "\(layers.rawValue)_\(dateString)_\(minX)_\(minY)_\(maxX)_\(maxY)_\(width)x\(height)"
+    }
 }
 
 // MARK: - Debug Extension
 public extension EarthDataMapRequest {
     func debug() -> String {
-        """
+        let dateString = DateFormatHelper.formatDateForEarthData(date)
+        return """
         EarthDataMapRequest Debug Info:
         ├─ Coordinates: (\(minX), \(minY)) → (\(maxX), \(maxY))
         ├─ Dimensions: \(width)×\(height)
         ├─ BBOX: \(bbox)
         ├─ Area: \((maxX - minX) * (maxY - minY)) sq units
-        ├─ Time: \(time)
-        ├─ Layers: \(layers)
+        ├─ Date: \(dateString)
+        ├─ Layers: \(layers.rawValue)
         ├─ Format: \(format)
-        └─ CRS: \(crs)
+        ├─ CRS: \(crs)
+        └─ Cache Key: \(cacheKey)
         """
     }
 }
