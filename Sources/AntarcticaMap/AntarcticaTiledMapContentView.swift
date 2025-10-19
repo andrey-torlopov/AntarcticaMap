@@ -1,6 +1,4 @@
 import SwiftUI
-import Mazun
-import Letopis
 
 public struct AntarcticaTiledMapContentView: View {
     @State private var controller: TiledMapViewController
@@ -78,7 +76,7 @@ private final class TiledMapViewController: UIViewController {
         let view = MapTiledView()
         return view
     }()
-    
+
     lazy var tilesSource: EarthDataTilesSource = EarthDataTilesSource(
         imageSize: CGSize(width: 8192, height: 8192),
         tileSize: CGSize(width: 512, height: 512),
@@ -91,7 +89,7 @@ private final class TiledMapViewController: UIViewController {
         return view
     }()
 
-    
+
     init(logger: Letopis) {
         self.logger = logger
         super.init(nibName: nil, bundle: nil)
@@ -140,7 +138,7 @@ private final class TiledMapViewController: UIViewController {
         scrollView.minimumZoomScale = zoomScaleByLevel(levels)
         scrollView.maximumZoomScale = 1.0
         scrollView.contentSize = tiledView.frame.size
-        
+
         logger
             .event(DevelopmentEventType.debug)
             .action(DevelopmentAction.breakpoint)
