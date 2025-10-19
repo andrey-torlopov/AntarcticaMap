@@ -36,14 +36,15 @@ public final class MapTiledView: UIView {
 
     var isDebug = false
 
-    override class var layerClass: AnyClass { CATiledLayer.self }
+    public override class var layerClass: AnyClass { CATiledLayer.self }
 
-    override var contentScaleFactor: CGFloat {
+    public override var contentScaleFactor: CGFloat {
         get { 1 }
         set { }
     }
 
-    nonisolated(unsafe) override func draw(_ rect: CGRect) {
+    nonisolated(unsafe)
+    public override func draw(_ rect: CGRect) {
         super.draw(rect)
 
         guard let ctx = UIGraphicsGetCurrentContext() else { return }

@@ -77,7 +77,7 @@ private final class TiledMapViewController: UIViewController {
         return view
     }()
 
-    lazy var tilesSource: EarthDataTilesSource
+    var tilesSource: EarthDataTilesSource
 
     let scrollView: UIScrollView = {
         let view = UIScrollView()

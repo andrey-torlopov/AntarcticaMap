@@ -11,8 +11,8 @@ public class EarthDataTilesSource: NSObject, TilesSource {
     }
 
     // TilesSource requirements
-    let tileSize: CGSize
-    let imageSize: CGSize
+    public let tileSize: CGSize
+    public let imageSize: CGSize
     private let maxLevelIndex: Int
     private let params: EarthDataMapRequest
     private let logger: TiledMapLogger
@@ -33,7 +33,7 @@ public class EarthDataTilesSource: NSObject, TilesSource {
         super.init()
     }
 
-    func request(for origin: CGPoint, scale: CGFloat) -> TileRequest {
+    public func request(for origin: CGPoint, scale: CGFloat) -> TileRequest {
         let fallbackRequest = Request(column: 0, row: 0, level: 0)
 
         guard scale.isFinite, scale > 0 else {
@@ -69,7 +69,7 @@ public class EarthDataTilesSource: NSObject, TilesSource {
         return Request(column: column, row: row, level: levelIndex)
     }
 
-    func tile(by request: TileRequest) -> UIImage? {
+    public func tile(by request: TileRequest) -> UIImage? {
         guard let request = request as? Request else { return nil }
 
         let tilesPerEdge = max(1, 1 << request.level)

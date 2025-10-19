@@ -15,7 +15,8 @@ public struct EarthDataMapRequest: Codable, Equatable, Sendable {
     public let layers: EarthDataLayer
     public let format: String
     public let crs: String
-
+    public let dateString: String
+    
     public init(
         minX: Int,
         minY: Int,
@@ -38,6 +39,7 @@ public struct EarthDataMapRequest: Codable, Equatable, Sendable {
         self.layers = layers
         self.format = format
         self.crs = crs
+        self.dateString = DateFormatHelper.formatDateForEarthData(date)
     }
 
     public var bbox: String {
@@ -45,7 +47,6 @@ public struct EarthDataMapRequest: Codable, Equatable, Sendable {
     }
 
     public var cacheKey: String {
-        let dateString = DateFormatHelper.formatDateForEarthData(date)
         return "\(layers.rawValue)_\(dateString)_\(minX)_\(minY)_\(maxX)_\(maxY)_\(width)x\(height)"
     }
 }
@@ -53,7 +54,6 @@ public struct EarthDataMapRequest: Codable, Equatable, Sendable {
 // MARK: - Debug Extension
 public extension EarthDataMapRequest {
     func debug() -> String {
-        let dateString = DateFormatHelper.formatDateForEarthData(date)
         return """
         EarthDataMapRequest Debug Info:
         ├─ Coordinates: (\(minX), \(minY)) → (\(maxX), \(maxY))
