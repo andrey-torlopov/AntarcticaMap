@@ -181,7 +181,7 @@ public class EarthDataTilesSource: NSObject, TilesSource {
 
         // If we have a network provider, use async loading with synchronous wait
         if networkProvider != nil {
-            return tileWithAsyncWait(by: request)
+            return await tileWithAsyncWait(by: request)
         }
 
         // Legacy synchronous loading
@@ -196,22 +196,15 @@ public class EarthDataTilesSource: NSObject, TilesSource {
     /// This method bridges the synchronous TilesSource protocol with async NetworkProvider
     /// without capturing mutable state across concurrency domains.
     private func tileWithAsyncWait(by request: Request) async -> UIImage? {
-        // Use a continuation to obtain the result synchronously without shared mutable capture.
-        let result: Result<UIImage?, Error> = withUnsafeContinuation { continuation in
-            Task {
-                do {
-                    let image = try await tileAsync(by: request)
-                    continuation.resume(returning: .success(image))
-                } catch {
-                    continuation.resume(returning: .failure(error))
-                }
-            }
-        }
-
-        switch result {
-        case .success(let image):
-            return image
-        case .failure:
+        do {
+            return try await tileAsync(by: request)
+        } catch {
+            onEvent?([
+                "type": "error",
+                "message": "Failed to load tile asynchronously",
+                "request_description": request.description,
+                "underlying_error": String(describing: error)
+            ])
             return nil
         }
     }
