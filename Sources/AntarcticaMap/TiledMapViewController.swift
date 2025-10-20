@@ -2,7 +2,13 @@ import UIKit
 
 public final class TiledMapViewController: UIViewController {
     private var didSetupZoom = false
-    private let logger: TiledMapLogger
+
+    /// Опциональный обработчик событий из провайдера тайлов
+    public var onEvent: TileSourceEventHandler? {
+        didSet {
+            tilesSource.onEvent = onEvent
+        }
+    }
 
     private lazy var tiledView: MapTiledView = {
         let view = MapTiledView()
@@ -17,13 +23,11 @@ public final class TiledMapViewController: UIViewController {
         return view
     }()
 
-    public init(params: EarthDataMapRequest, imageSize: CGSize, logger: TiledMapLogger) {
-        self.logger = logger
+    public init(params: EarthDataMapRequest, imageSize: CGSize) {
         self.tilesSource = EarthDataTilesSource(
             params: params,
             imageSize: imageSize,
-            tileSize: CGSize(width: 512, height: 512),
-            logger: logger
+            tileSize: CGSize(width: 512, height: 512)
         )
         super.init(nibName: nil, bundle: nil)
     }
@@ -34,7 +38,6 @@ public final class TiledMapViewController: UIViewController {
 
     public override func viewDidLoad() {
         super.viewDidLoad()
-        logger.info("TiledMapViewController viewDidLoad", metadata: nil)
 
         view.backgroundColor = .systemBackground
         view.addSubview(scrollView)
@@ -65,8 +68,6 @@ public final class TiledMapViewController: UIViewController {
         scrollView.minimumZoomScale = zoomScaleByLevel(levels)
         scrollView.maximumZoomScale = 1.0
         scrollView.contentSize = tiledView.frame.size
-
-        logger.debug("Load map init", metadata: ["size": "\(size)", "tileSize": "\(tileSize)", "levels": "\(levels)"])
     }
 
     public override func viewDidLayoutSubviews() {
@@ -93,19 +94,15 @@ public final class TiledMapViewController: UIViewController {
 
         scrollView.minimumZoomScale = minZoomScale
         scrollView.setZoomScale(minZoomScale, animated: false)
-
-        logger.debug("Scale to fit", metadata: ["minZoomScale": "\(minZoomScale)"])
     }
 
     public func zoomIn() {
         let newScale = min(scrollView.zoomScale * 2, scrollView.maximumZoomScale)
-        logger.debug("Zoom in", metadata: ["currentScale": "\(scrollView.zoomScale)", "newScale": "\(newScale)"])
         scrollView.setZoomScale(newScale, animated: true)
     }
 
     public func zoomOut() {
         let newScale = max(scrollView.zoomScale / 2, scrollView.minimumZoomScale)
-        logger.debug("Zoom out", metadata: ["currentScale": "\(scrollView.zoomScale)", "newScale": "\(newScale)"])
         scrollView.setZoomScale(newScale, animated: true)
     }
 
@@ -113,7 +110,6 @@ public final class TiledMapViewController: UIViewController {
         var offset = scrollView.contentOffset
         offset.x += dx
         offset.y += dy
-        logger.debug("Move", metadata: ["offsetX": "\(offset.x)", "offsetY": "\(offset.y)"])
         scrollView.setContentOffset(offset, animated: true)
     }
 
