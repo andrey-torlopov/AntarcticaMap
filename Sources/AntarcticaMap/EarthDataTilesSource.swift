@@ -21,7 +21,7 @@ public class EarthDataTilesSource: NSObject, TilesSource {
         params: EarthDataMapRequest,
         imageSize: CGSize = CGSize(width: 512, height: 512),
         tileSize: CGSize = CGSize(width: 512, height: 512),
-        logger: TiledMapLogger = NoOpLogger()
+        logger: TiledMapLogger = EmptyLogger()
     ) {
         self.params = params
         self.imageSize = imageSize

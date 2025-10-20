@@ -69,9 +69,6 @@ struct ContentView: View {
 ```swift
 import AntarcticaMap
 
-// Используем встроенный консольный логгер
-let logger = ConsoleLogger()
-
 let params = EarthDataMapRequest(
     minX: -4_000_000,
     minY: -4_000_000,
