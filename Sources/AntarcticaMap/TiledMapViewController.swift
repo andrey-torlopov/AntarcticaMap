@@ -23,11 +23,12 @@ public final class TiledMapViewController: UIViewController {
         return view
     }()
 
-    public init(params: EarthDataMapRequest, imageSize: CGSize) {
+    public init(params: EarthDataMapRequest, imageSize: CGSize, networkProvider: NetworkProvider? = nil) {
         self.tilesSource = EarthDataTilesSource(
             params: params,
             imageSize: imageSize,
-            tileSize: CGSize(width: 512, height: 512)
+            tileSize: CGSize(width: 512, height: 512),
+            networkProvider: networkProvider
         )
         super.init(nibName: nil, bundle: nil)
     }
